@@ -1,53 +1,48 @@
 cmake_minimum_required(VERSION 3.15)
 project(Messenger)
 
-# Настройка стандарта C++
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Пути для поиска Boost (для macOS)
-set(BOOST_ROOT $ENV{HOMEBREW_PREFIX}/opt/boost)
-set(BOOST_LIBRARY_DIR $ENV{HOMEBREW_PREFIX}/opt/boost/lib)
-set(BOOST_INCLUDEDIR $ENV{HOMEBREW_PREFIX}/opt/boost/include)
-
-
-find_package(Boost 1.72.0 REQUIRED COMPONENTS system filesystem)
-
-
+# Добавляем SQLite
 find_package(SQLite3 REQUIRED)
 
+# Компилируем Boost из подмодуля
+add_subdirectory(dependencies/boost)
 
-include_directories(
-    ${CMAKE_SOURCE_DIR}
-    ${CMAKE_SOURCE_DIR}/dependencies
-    ${CMAKE_SOURCE_DIR}/http
-    ${CMAKE_SOURCE_DIR}/db
-    ${CMAKE_SOURCE_DIR}/models
-    ${Boost_INCLUDE_DIRS}
-    ${SQLite3_INCLUDE_DIRS}
-)
+# Добавляем остальные твои подмодули
+add_subdirectory(db)
+add_subdirectory(http)
+add_subdirectory(models)
+add_subdirectory(dependencies)
 
-
+# Исполняемый файл
 add_executable(Messenger
     main.cpp
     core.cpp
-    dependencies/CoreDependencies.cpp
-    http/http.cpp
-    http/HTTPManager.cpp
-    db/db.cpp
-    db/DBManager.cpp
-    models/MessagesManager.cpp
 )
 
-# Линкуем зависимости
-target_link_libraries(Messenger
-    PRIVATE
-    Boost::system
-    Boost::filesystem
-    ${SQLite3_LIBRARIES}
+# Подключаем заголовочные файлы Boost
+# Предполагается, что у тебя заголовки Boost по пути dependencies/boost
+# Если путь отличается, поправь соответственно
+
+target_include_directories(Messenger PRIVATE
+    dependencies/boost
 )
 
+# Линкуем собранные вручную библиотеки Boost
+# Убедись, что имена целей именно такие (boost_system и boost_filesystem)
+target_link_libraries(Messenger PRIVATE
+    db
+    http
+    models
+    coredependencies
+    SQLite::SQLite3
+    boost_system
+    boost_filesystem
+)
 
+# Линкуем фреймворк для macOS
 if(APPLE)
     target_link_libraries(Messenger PRIVATE "-framework Foundation")
 endif()
