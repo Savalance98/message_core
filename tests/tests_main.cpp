@@ -4,19 +4,17 @@
 #include "core.h"
 #include "db/db.h"
 #include "http/http.h"
-#include "History.h"  // Для работы с классом History
-#include "Message.h"  // Для работы с классом Message
+#include "History.h"
+#include "Message.h"
 
 TEST_CASE("Messenger: Send and Receive Messages", "[messenger]") {
-    // Создаем два экземпляра базы данных и HTTP-серверов для Alice и Bob
     auto db1 = std::make_shared<DB>("messenger_test1", "127.0.0.1:8081");
     auto db2 = std::make_shared<DB>("messenger_test2", "127.0.0.1:8082");
     auto http1 = std::make_shared<http_server>("8081");
     auto http2 = std::make_shared<http_server>("8082");
 
-    // Создаем два экземпляра Core
-    auto core1 = std::make_unique<Core>(db1, http1); // Alice
-    auto core2 = std::make_unique<Core>(db2, http2); // Bob
+    auto core1 = std::make_unique<Core>(db1, http1);
+    auto core2 = std::make_unique<Core>(db2, http2); 
 
     SECTION("Alice sends a message to Bob") {
         // Alice отправляет сообщение Bob'у
@@ -25,7 +23,6 @@ TEST_CASE("Messenger: Send and Receive Messages", "[messenger]") {
             "127.0.0.1:8082"
         );
 
-        // Даем время HTTP-серверу обработать сообщение
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
         // Получаем историю у Alice для переписки с Bob'ом
