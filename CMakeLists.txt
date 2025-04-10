@@ -4,11 +4,10 @@ project(MyMessenger)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-# Поиск ICU
-find_package(ICU REQUIRED COMPONENTS uc data)
 
-# Добавление директорий ICU
-include_directories(${ICU_INCLUDE_DIRS})
+set(ICU_ROOT "/opt/homebrew/Cellar/icu4c@77/77.1")
+include_directories(${ICU_ROOT}/include)
+link_directories(${ICU_ROOT}/lib)
 
 include_directories(src)
 include_directories(dependencies)
@@ -17,6 +16,8 @@ include_directories(dependencies)
 
 # connect boost
 add_subdirectory(dependencies/boost)
+# /opt/homebrew/Cellar/icu4c@77/77.1/include/unicode/ucnv.h
+# include_directories(/opt/homebrew/Cellar/icu4c@77/77.1/include/unicode/)
 
 include_directories(${CMAKE_SOURCE_DIR}/dependencies/boost)
 include_directories(${CMAKE_SOURCE_DIR}/dependencies/boost/libs/align/include)
