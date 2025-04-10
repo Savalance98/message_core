@@ -3,13 +3,20 @@
 
 Message_manager::Message_manager(std::shared_ptr<CoreDependencies> deps_) : deps(deps_)
     {
-        // Регистрируем обработчик входящих сообщений
+
         deps->http_serv->set_request_handler(
             [this](const std::string& msg, const std::string& sender) {
                 handle_incoming_message(msg, sender);
             });
     }
 
+std::vector<std::unique_ptr<Message>> Message_manager::convert_records_to_messages(const std::vector<MessageRecord>& records){
+    std::vector<std::unique_ptr<Message>> messages;
+    for (const auto& record : records) {
+        messages.push_back(std::make_unique<TextMessage>(record.getMessage()));
+    }
+    return messages;
+}
 
 void Message_manager::send_message(const std::string& msg, const std::string& ip_port) {
     size_t colon_pos = ip_port.find(':');
@@ -20,18 +27,24 @@ void Message_manager::send_message(const std::string& msg, const std::string& ip
     std::string ip = ip_port.substr(0, colon_pos);
     std::string port = ip_port.substr(colon_pos + 1);
 
-    // Отправляем сообщение
-    deps->db->add_message("Me", ip_port, msg);
+
+    deps->db->add_message(deps->db->get_ip_address(), ip_port, msg);
     deps->http_serv->send_message(msg, ip, port);
-    
 }
 
 
+
 void Message_manager::handle_incoming_message(const std::string& msg, const std::string& sender) {
-        // Логика обработки сообщения
         // std::cout << msg << std::endl;
-        deps->db->add_message(sender, "Me", msg);
+        deps->db->add_message(sender, deps->db->get_ip_address(), msg);
     }
+
+std::unique_ptr<History> Message_manager::get_history(const std::string& ip_2) {
+    std::string fromUser = deps->db->get_ip_address();
+    auto records = deps->db->get_message_records(fromUser, ip_2);
+    auto messages = convert_records_to_messages(records);
+    return std::make_unique<History>(std::move(messages));
+}
 
 
 

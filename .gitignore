@@ -1,6 +1,9 @@
 build/
 .vscode/
+users_not/
+Доккументы/
 *.o
 *.obj
 *.exe
 *.DS_Store
+
